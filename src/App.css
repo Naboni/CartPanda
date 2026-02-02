@@ -1,0 +1,55 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app__header {
+  padding: 32px 24px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.app__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.app__subtitle {
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.app__main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f9fafb;
+}
+
+.placeholder-card {
+  max-width: 420px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px dashed #d1d5db;
+  background: #ffffff;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.placeholder-card__title {
+  margin: 0;
+  font-weight: 600;
+  color: #111827;
+}
+
+.placeholder-card__body {
+  margin: 8px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
