@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
-import ReactFlow, { Background, type ReactFlowInstance } from 'reactflow'
+import ReactFlow, { Background, MarkerType, type ReactFlowInstance } from 'reactflow'
 
 import { nodeTypes } from './features/funnel/components/nodes/nodeTypes'
 import { useFunnelStore } from './features/funnel/state/store'
-import type { NodeType } from './features/funnel/types'
+import type { FunnelEdge, FunnelNode, NodeType } from './features/funnel/types'
 import './App.css'
 
 const paletteItems: Array<{ type: NodeType; label: string }> = [
@@ -24,6 +24,39 @@ function App() {
   const onConnect = useFunnelStore((state) => state.onConnect)
 
   const hasNodes = useMemo(() => nodes.length > 0, [nodes.length])
+  const nodeById = useMemo(() => {
+    return nodes.reduce<Record<string, FunnelNode>>((acc, node) => {
+      acc[node.id] = node
+      return acc
+    }, {})
+  }, [nodes])
+
+  const validation = useMemo(() => {
+    const errors: string[] = []
+    const warnings: string[] = []
+
+    edges.forEach((edge) => {
+      const sourceNode = nodeById[edge.source]
+      if (sourceNode?.data.type === 'thankyou') {
+        errors.push('Thank You pages cannot have outgoing connections.')
+      }
+    })
+
+    const salesNode = nodes.find((node) => node.data.type === 'sales')
+    if (salesNode) {
+      const salesEdges = edges.filter((edge) => edge.source === salesNode.id)
+      if (salesEdges.length !== 1) {
+        warnings.push('Sales Page should have exactly one outgoing connection.')
+      } else {
+        const targetNode = nodeById[salesEdges[0]?.target]
+        if (targetNode?.data.type !== 'order') {
+          warnings.push('Sales Page should connect to an Order Page.')
+        }
+      }
+    }
+
+    return { errors, warnings }
+  }, [edges, nodeById, nodes])
 
   return (
     <div className="app">
@@ -63,6 +96,26 @@ function App() {
             Import, export, and validation will appear here.
           </p>
         </section>
+        <section className="sidebar__section" aria-label="Validation">
+          <h2 className="sidebar__section-title">Validation</h2>
+          <div className="validation">
+            {validation.errors.length === 0 && validation.warnings.length === 0 && (
+              <p className="validation__empty">No issues detected yet.</p>
+            )}
+            {validation.errors.map((error, index) => (
+              <div className="validation__item validation__item--error" key={`error-${index}`}>
+                <span className="validation__badge">Error</span>
+                <span>{error}</span>
+              </div>
+            ))}
+            {validation.warnings.map((warning, index) => (
+              <div className="validation__item validation__item--warning" key={`warn-${index}`}>
+                <span className="validation__badge">Warning</span>
+                <span>{warning}</span>
+              </div>
+            ))}
+          </div>
+        </section>
       </aside>
       <main className="canvas" aria-label="Funnel canvas">
         <div className="canvas__header">
@@ -97,6 +150,10 @@ function App() {
             onInit={setReactFlowInstance}
             onConnect={(connection) => {
               if (connection.source && connection.target) {
+                const sourceNode = nodeById[connection.source]
+                if (sourceNode?.data.type === 'thankyou') {
+                  return
+                }
                 onConnect(connection.source, connection.target)
               }
             }}
@@ -104,6 +161,13 @@ function App() {
               updateNodePosition(node.id, node.position)
             }}
             panOnDrag
+            defaultEdgeOptions={{
+              markerEnd: {
+                type: MarkerType.ArrowClosed,
+                color: '#111827',
+              },
+              style: { strokeWidth: 2, stroke: '#111827' },
+            }}
             fitView
           >
             <Background gap={20} size={1} color="#e5e7eb" />
