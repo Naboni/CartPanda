@@ -32,24 +32,12 @@ function App() {
   })
 
   return (
-    <div className="page">
-      <TopNav
-        onImport={handleImport}
-        onExport={handleExport}
-        onUndo={undo}
-        onRedo={redo}
-        onReset={() => {
-          reset()
-          localStorage.removeItem(STORAGE_KEY)
-        }}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        storageError={storageError}
-        importError={importError}
-      />
-      <div className="app">
+    <div className="app">
+      <div className="sidebar-column">
+        <TopNav storageError={storageError} importError={importError} />
         <Sidebar validation={{ errors, warnings }} />
-        <CanvasArea
+      </div>
+      <CanvasArea
           nodes={nodes}
           edges={edges}
           nodeById={nodeById}
@@ -58,8 +46,17 @@ function App() {
           applyEdgeChanges={applyEdgeChanges}
           onConnect={onConnect}
           savePositionSnapshot={savePositionSnapshot}
+          onImport={handleImport}
+          onExport={handleExport}
+          onUndo={undo}
+          onRedo={redo}
+          onReset={() => {
+            reset()
+            localStorage.removeItem(STORAGE_KEY)
+          }}
+          canUndo={canUndo}
+          canRedo={canRedo}
         />
-      </div>
     </div>
   )
 }

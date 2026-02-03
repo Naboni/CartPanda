@@ -24,12 +24,17 @@ export function Sidebar({ validation }: SidebarProps) {
               draggable
               role="listitem"
               aria-label={`Drag ${item.label} node`}
+              style={{ borderLeftColor: item.color }}
               onDragStart={(event) => {
                 event.dataTransfer.setData('application/reactflow', item.type)
                 event.dataTransfer.effectAllowed = 'move'
               }}
             >
-              <span className="palette__dot" aria-hidden />
+              <span 
+                className="palette__dot" 
+                style={{ backgroundColor: item.color }} 
+                aria-hidden 
+              />
               {item.label}
             </button>
           ))}

@@ -5,6 +5,12 @@ import { edgeTypes } from '../edges/edgeTypes'
 import { nodeTypes } from '../nodes/nodeTypes'
 import type { FunnelEdge, FunnelNode, FunnelState, NodeType } from '../../types'
 
+import importIcon from '../../../../assets/import.png'
+import exportIcon from '../../../../assets/export.png'
+import undoIcon from '../../../../assets/undo.png'
+import redoIcon from '../../../../assets/redo.png'
+import resetIcon from '../../../../assets/reset.png'
+
 type CanvasAreaProps = {
   nodes: FunnelNode[]
   edges: FunnelEdge[]
@@ -14,6 +20,13 @@ type CanvasAreaProps = {
   applyEdgeChanges: (changes: EdgeChange[]) => void
   onConnect: (source: string, target: string) => void
   savePositionSnapshot: (snapshot: Pick<FunnelState, 'nodes' | 'edges'>) => void
+  onImport: (file: File) => void
+  onExport: () => void
+  onUndo: () => void
+  onRedo: () => void
+  onReset: () => void
+  canUndo: boolean
+  canRedo: boolean
 }
 
 export function CanvasArea({
@@ -25,18 +38,93 @@ export function CanvasArea({
   applyEdgeChanges,
   onConnect,
   savePositionSnapshot,
+  onImport,
+  onExport,
+  onUndo,
+  onRedo,
+  onReset,
+  canUndo,
+  canRedo,
 }: CanvasAreaProps) {
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null)
   const hasNodes = useMemo(() => nodes.length > 0, [nodes.length])
   const dragSnapshotRef = useRef<Pick<FunnelState, 'nodes' | 'edges'> | null>(null)
+  const importInputRef = useRef<HTMLInputElement | null>(null)
 
   return (
     <main className="canvas" aria-label="Funnel canvas">
       <div className="canvas__header">
-        <h2 className="canvas__title">Canvas</h2>
-        <p className="canvas__subtitle">
-          The drag-and-drop flow editor will live in this area.
-        </p>
+        <div className="canvas__header-left">
+          <h2 className="canvas__title">Canvas</h2>
+          <p className="canvas__subtitle">
+            The drag-and-drop flow editor will live in this area.
+          </p>
+        </div>
+        <div className="canvas__actions">
+          <button
+            type="button"
+            className="icon-button"
+            onClick={() => importInputRef.current?.click()}
+            title="Import JSON"
+            aria-label="Import funnel JSON"
+          >
+            <img src={importIcon} alt="" aria-hidden />
+          </button>
+          <button
+            type="button"
+            className="icon-button"
+            onClick={onExport}
+            title="Export JSON"
+            aria-label="Export funnel JSON"
+          >
+            <img src={exportIcon} alt="" aria-hidden />
+          </button>
+          <span className="canvas__actions-divider" aria-hidden />
+          <button
+            type="button"
+            className="icon-button"
+            onClick={onUndo}
+            disabled={!canUndo}
+            title="Undo"
+            aria-label="Undo last change"
+          >
+            <img src={undoIcon} alt="" aria-hidden />
+          </button>
+          <button
+            type="button"
+            className="icon-button"
+            onClick={onRedo}
+            disabled={!canRedo}
+            title="Redo"
+            aria-label="Redo last change"
+          >
+            <img src={redoIcon} alt="" aria-hidden />
+          </button>
+          <span className="canvas__actions-divider" aria-hidden />
+          <button
+            type="button"
+            className="icon-button icon-button--danger"
+            onClick={onReset}
+            title="Reset"
+            aria-label="Reset builder"
+          >
+            <img src={resetIcon} alt="" aria-hidden />
+          </button>
+          <input
+            ref={importInputRef}
+            className="visually-hidden"
+            type="file"
+            accept="application/json"
+            aria-label="Select JSON file to import"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (file) {
+                onImport(file)
+                event.target.value = ''
+              }
+            }}
+          />
+        </div>
       </div>
       <div
         className="canvas__flow"
