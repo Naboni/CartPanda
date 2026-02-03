@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import ReactFlow, { Background, MarkerType, type ReactFlowInstance } from 'reactflow'
 
 import { nodeTypes } from './features/funnel/components/nodes/nodeTypes'
+import { funnelStateSchema } from './features/funnel/schema/funnelSchema'
 import { useFunnelStore } from './features/funnel/state/store'
 import type { FunnelEdge, FunnelNode, NodeType } from './features/funnel/types'
+import { STORAGE_KEY } from './features/funnel/utils/storage'
 import './App.css'
 
 const paletteItems: Array<{ type: NodeType; label: string }> = [
@@ -16,12 +18,17 @@ const paletteItems: Array<{ type: NodeType; label: string }> = [
 
 function App() {
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null)
+  const [storageError, setStorageError] = useState<string | null>(null)
+  const hasLoadedRef = useRef(false)
+  const saveTimeoutRef = useRef<number | null>(null)
 
   const nodes = useFunnelStore((state) => state.nodes)
   const edges = useFunnelStore((state) => state.edges)
   const addNode = useFunnelStore((state) => state.addNode)
   const updateNodePosition = useFunnelStore((state) => state.updateNodePosition)
   const onConnect = useFunnelStore((state) => state.onConnect)
+  const setState = useFunnelStore((state) => state.setState)
+  const reset = useFunnelStore((state) => state.reset)
 
   const hasNodes = useMemo(() => nodes.length > 0, [nodes.length])
   const nodeById = useMemo(() => {
@@ -58,6 +65,53 @@ function App() {
     return { errors, warnings }
   }, [edges, nodeById, nodes])
 
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (!stored) {
+      hasLoadedRef.current = true
+      return
+    }
+    try {
+      const parsed = JSON.parse(stored)
+      const result = funnelStateSchema.safeParse(parsed)
+      if (result.success) {
+        setState(result.data)
+        setStorageError(null)
+      } else {
+        setStorageError('Saved data was invalid and has been reset.')
+        reset()
+        localStorage.removeItem(STORAGE_KEY)
+      }
+    } catch {
+      setStorageError('Saved data could not be parsed and has been reset.')
+      reset()
+      localStorage.removeItem(STORAGE_KEY)
+    } finally {
+      hasLoadedRef.current = true
+    }
+  }, [reset, setState])
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) {
+      return
+    }
+    if (saveTimeoutRef.current) {
+      window.clearTimeout(saveTimeoutRef.current)
+    }
+    saveTimeoutRef.current = window.setTimeout(() => {
+      const payload: Pick<ReturnType<typeof useFunnelStore.getState>, 'nodes' | 'edges'> = {
+        nodes,
+        edges,
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+    }, 250)
+    return () => {
+      if (saveTimeoutRef.current) {
+        window.clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [edges, nodes])
+
   return (
     <div className="app">
       <aside className="sidebar" aria-label="Funnel controls">
@@ -93,8 +147,21 @@ function App() {
         <section className="sidebar__section" aria-label="Actions">
           <h2 className="sidebar__section-title">Actions</h2>
           <p className="sidebar__section-body">
-            Import, export, and validation will appear here.
+            Save, import, and export actions live here.
           </p>
+          <div className="actions">
+            <button
+              type="button"
+              className="action-button"
+              onClick={() => {
+                reset()
+                localStorage.removeItem(STORAGE_KEY)
+              }}
+            >
+              Reset builder
+            </button>
+            {storageError && <p className="actions__notice">{storageError}</p>}
+          </div>
         </section>
         <section className="sidebar__section" aria-label="Validation">
           <h2 className="sidebar__section-title">Validation</h2>

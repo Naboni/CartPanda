@@ -49,7 +49,7 @@ const createNode = (
 }
 
 const initialState: Pick<FunnelState, 'nodes' | 'edges'> = {
-  nodes: [createNode('sales', { x: 80, y: 120 }), createNode('order', { x: 380, y: 120 })],
+  nodes: [],
   edges: [],
 }
 
