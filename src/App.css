@@ -87,8 +87,8 @@
 }
 
 .canvas__empty-state {
-  flex: 1;
-  min-height: 360px;
+  position: absolute;
+  inset: 24px;
   border-radius: 16px;
   border: 2px dashed #cbd5f5;
   background: #ffffff;
@@ -110,4 +110,18 @@
   margin: 8px 0 0;
   font-size: 14px;
   color: #6b7280;
+}
+
+.canvas__flow {
+  position: relative;
+  flex: 1;
+  min-height: 360px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.canvas__flow .react-flow__renderer {
+  background: #ffffff;
 }

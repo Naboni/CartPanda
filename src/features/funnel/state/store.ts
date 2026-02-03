@@ -3,11 +3,6 @@ import { create } from 'zustand'
 
 import type { FunnelEdge, FunnelNode, FunnelNodeData, FunnelState, NodeType } from '../types'
 
-const initialState: Pick<FunnelState, 'nodes' | 'edges'> = {
-  nodes: [],
-  edges: [],
-}
-
 let idCounter = 1
 
 const typeTitles: Record<NodeType, string> = {
@@ -40,6 +35,11 @@ const createNode = (type: NodeType, position: { x: number; y: number }): FunnelN
     position,
     data,
   }
+}
+
+const initialState: Pick<FunnelState, 'nodes' | 'edges'> = {
+  nodes: [createNode('sales', { x: 80, y: 120 }), createNode('order', { x: 380, y: 120 })],
+  edges: [],
 }
 
 export const useFunnelStore = create<FunnelState>((set) => ({

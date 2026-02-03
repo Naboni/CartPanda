@@ -1,6 +1,14 @@
+import ReactFlow, { Background } from 'reactflow'
+
+import { useFunnelStore } from './features/funnel/state/store'
 import './App.css'
 
 function App() {
+  const nodes = useFunnelStore((state) => state.nodes)
+  const edges = useFunnelStore((state) => state.edges)
+  const updateNodePosition = useFunnelStore((state) => state.updateNodePosition)
+  const onConnect = useFunnelStore((state) => state.onConnect)
+
   return (
     <div className="app">
       <aside className="sidebar" aria-label="Funnel controls">
@@ -28,11 +36,31 @@ function App() {
             The drag-and-drop flow editor will live in this area.
           </p>
         </div>
-        <div className="canvas__empty-state" role="status" aria-live="polite">
-          <p className="canvas__empty-title">No nodes yet</p>
-          <p className="canvas__empty-body">
-            Start by dragging a page type from the palette into the canvas.
-          </p>
+        <div className="canvas__flow">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onConnect={(connection) => {
+              if (connection.source && connection.target) {
+                onConnect(connection.source, connection.target)
+              }
+            }}
+            onNodeDragStop={(_, node) => {
+              updateNodePosition(node.id, node.position)
+            }}
+            panOnDrag
+            fitView
+          >
+            <Background gap={20} size={1} color="#e5e7eb" />
+          </ReactFlow>
+          {nodes.length === 0 && (
+            <div className="canvas__empty-state" role="status" aria-live="polite">
+              <p className="canvas__empty-title">No nodes yet</p>
+              <p className="canvas__empty-body">
+                Start by dragging a page type from the palette into the canvas.
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>
