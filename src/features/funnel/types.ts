@@ -28,4 +28,5 @@ export type FunnelState = {
   redo: () => void
   setState: (importedState: Pick<FunnelState, 'nodes' | 'edges'>) => void
   reset: () => void
+  savePositionSnapshot: (snapshotBefore: Pick<FunnelState, 'nodes' | 'edges'>) => void
 }

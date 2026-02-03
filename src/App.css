@@ -1,6 +1,66 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f3f4f6;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.topbar__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.topbar__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.topbar__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.topbar__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.topbar__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.topbar__notice {
+  margin: 0;
+  font-size: 12px;
+  color: #b91c1c;
+  text-align: right;
+}
+
 .app {
   display: flex;
-  min-height: 100vh;
+  flex: 1;
   background: #f3f4f6;
 }
 
@@ -13,28 +73,6 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-}
-
-.sidebar__header {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sidebar__eyebrow {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #6b7280;
-}
-
-.sidebar__title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
 }
 
 .sidebar__section {
@@ -147,19 +185,6 @@
   flex-shrink: 0;
 }
 
-.actions {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.actions__row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 .action-button {
   border: 1px solid #e5e7eb;
   background: #ffffff;
@@ -182,10 +207,9 @@
   background: #f8fafc;
 }
 
-.actions__notice {
-  margin: 0;
-  font-size: 12px;
-  color: #b91c1c;
+.action-button--danger {
+  border-color: #fecaca;
+  color: #991b1b;
 }
 
 .actions__file-input {
@@ -376,6 +400,15 @@
 }
 
 @media (max-width: 960px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .topbar__actions {
+    align-items: flex-start;
+  }
+
   .app {
     flex-direction: column;
   }

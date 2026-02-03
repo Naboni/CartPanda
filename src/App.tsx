@@ -1,36 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import ReactFlow, { Background, MarkerType, type ReactFlowInstance } from 'reactflow'
-
-import { edgeTypes } from './features/funnel/components/edges/edgeTypes'
-import { nodeTypes } from './features/funnel/components/nodes/nodeTypes'
-import { funnelStateSchema } from './features/funnel/schema/funnelSchema'
+import { CanvasArea } from './features/funnel/components/layout/CanvasArea'
+import { Sidebar } from './features/funnel/components/layout/Sidebar'
+import { TopNav } from './features/funnel/components/layout/TopNav'
+import { useFunnelImportExport } from './features/funnel/hooks/useFunnelImportExport'
+import { useFunnelPersistence } from './features/funnel/hooks/useFunnelPersistence'
+import { useFunnelValidation } from './features/funnel/hooks/useFunnelValidation'
 import { useFunnelStore } from './features/funnel/state/store'
-import type { FunnelEdge, FunnelNode, NodeType } from './features/funnel/types'
 import { STORAGE_KEY } from './features/funnel/utils/storage'
 import './App.css'
 
-const paletteItems: Array<{ type: NodeType; label: string }> = [
-  { type: 'sales', label: 'Sales Page' },
-  { type: 'order', label: 'Order Page' },
-  { type: 'upsell', label: 'Upsell' },
-  { type: 'downsell', label: 'Downsell' },
-  { type: 'thankyou', label: 'Thank You' },
-]
-
 function App() {
-  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null)
-  const [storageError, setStorageError] = useState<string | null>(null)
-  const [importError, setImportError] = useState<string | null>(null)
-  const hasLoadedRef = useRef(false)
-  const saveTimeoutRef = useRef<number | null>(null)
-  const importInputRef = useRef<HTMLInputElement | null>(null)
-
   const nodes = useFunnelStore((state) => state.nodes)
   const edges = useFunnelStore((state) => state.edges)
   const addNode = useFunnelStore((state) => state.addNode)
   const applyNodeChanges = useFunnelStore((state) => state.applyNodeChanges)
   const applyEdgeChanges = useFunnelStore((state) => state.applyEdgeChanges)
-  const updateNodePosition = useFunnelStore((state) => state.updateNodePosition)
   const onConnect = useFunnelStore((state) => state.onConnect)
   const setState = useFunnelStore((state) => state.setState)
   const reset = useFunnelStore((state) => state.reset)
@@ -38,322 +21,45 @@ function App() {
   const redo = useFunnelStore((state) => state.redo)
   const canUndo = useFunnelStore((state) => state.canUndo)
   const canRedo = useFunnelStore((state) => state.canRedo)
+  const savePositionSnapshot = useFunnelStore((state) => state.savePositionSnapshot)
 
-  const hasNodes = useMemo(() => nodes.length > 0, [nodes.length])
-  const nodeById = useMemo(() => {
-    return nodes.reduce<Record<string, FunnelNode>>((acc, node) => {
-      acc[node.id] = node
-      return acc
-    }, {})
-  }, [nodes])
-
-  const validation = useMemo(() => {
-    const errors: string[] = []
-    const warnings: string[] = []
-
-    edges.forEach((edge) => {
-      const sourceNode = nodeById[edge.source]
-      if (sourceNode?.data.type === 'thankyou') {
-        errors.push('Thank You pages cannot have outgoing connections.')
-      }
-    })
-
-    const salesNode = nodes.find((node) => node.data.type === 'sales')
-    if (salesNode) {
-      const salesEdges = edges.filter((edge) => edge.source === salesNode.id)
-      if (salesEdges.length !== 1) {
-        warnings.push('Sales Page should have exactly one outgoing connection.')
-      } else {
-        const targetNode = nodeById[salesEdges[0]?.target]
-        if (targetNode?.data.type !== 'order') {
-          warnings.push('Sales Page should connect to an Order Page.')
-        }
-      }
-    }
-
-    return { errors, warnings }
-  }, [edges, nodeById, nodes])
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) {
-      hasLoadedRef.current = true
-      return
-    }
-    try {
-      const parsed = JSON.parse(stored)
-      const result = funnelStateSchema.safeParse(parsed)
-      if (result.success) {
-        setState(result.data)
-        setStorageError(null)
-      } else {
-        setStorageError('Saved data was invalid and has been reset.')
-        reset()
-        localStorage.removeItem(STORAGE_KEY)
-      }
-    } catch {
-      setStorageError('Saved data could not be parsed and has been reset.')
-      reset()
-      localStorage.removeItem(STORAGE_KEY)
-    } finally {
-      hasLoadedRef.current = true
-    }
-  }, [reset, setState])
-
-  useEffect(() => {
-    if (!hasLoadedRef.current) {
-      return
-    }
-    if (saveTimeoutRef.current) {
-      window.clearTimeout(saveTimeoutRef.current)
-    }
-    saveTimeoutRef.current = window.setTimeout(() => {
-      const payload: Pick<ReturnType<typeof useFunnelStore.getState>, 'nodes' | 'edges'> = {
-        nodes,
-        edges,
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-    }, 250)
-    return () => {
-      if (saveTimeoutRef.current) {
-        window.clearTimeout(saveTimeoutRef.current)
-      }
-    }
-  }, [edges, nodes])
-
-  const handleExport = () => {
-    const payload: Pick<ReturnType<typeof useFunnelStore.getState>, 'nodes' | 'edges'> = {
-      nodes,
-      edges,
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'cartpanda-funnel.json'
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    URL.revokeObjectURL(url)
-  }
-
-  const handleImport = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      try {
-        const content = typeof reader.result === 'string' ? reader.result : ''
-        const parsed = JSON.parse(content)
-        const result = funnelStateSchema.safeParse(parsed)
-        if (!result.success) {
-          setImportError('Invalid funnel JSON. Please check the file and try again.')
-          return
-        }
-        setState(result.data)
-        setImportError(null)
-      } catch {
-        setImportError('Unable to read JSON file. Please verify the file and try again.')
-      }
-    }
-    reader.onerror = () => {
-      setImportError('Unable to read the selected file.')
-    }
-    reader.readAsText(file)
-  }
+  const { errors, warnings, nodeById } = useFunnelValidation(nodes, edges)
+  const { storageError } = useFunnelPersistence({ nodes, edges, setState, reset })
+  const { handleExport, handleImport, importError } = useFunnelImportExport({
+    nodes,
+    edges,
+    setState,
+  })
 
   return (
-    <div className="app">
-      <aside className="sidebar" aria-label="Funnel controls">
-        <header className="sidebar__header">
-          <p className="sidebar__eyebrow">Cartpanda</p>
-          <h1 className="sidebar__title">Funnel Builder</h1>
-        </header>
-        <section className="sidebar__section" aria-label="Palette">
-          <h2 className="sidebar__section-title">Palette</h2>
-          <p className="sidebar__section-body">
-            Drag nodes into the canvas to build your funnel.
-          </p>
-          <div className="palette" role="list">
-            {paletteItems.map((item) => (
-              <button
-                key={item.type}
-                className="palette__item"
-                type="button"
-                draggable
-                role="listitem"
-                aria-label={`Drag ${item.label} node`}
-                onDragStart={(event) => {
-                  event.dataTransfer.setData('application/reactflow', item.type)
-                  event.dataTransfer.effectAllowed = 'move'
-                }}
-              >
-                <span className="palette__dot" aria-hidden />
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </section>
-        <section className="sidebar__section" aria-label="Actions">
-          <h2 className="sidebar__section-title">Actions</h2>
-          <p className="sidebar__section-body">
-            Save, import, and export actions live here.
-          </p>
-          <div className="actions">
-            <div className="actions__row">
-              <button
-                type="button"
-                className="action-button"
-                onClick={() => importInputRef.current?.click()}
-                aria-label="Import funnel JSON"
-              >
-                Import JSON
-              </button>
-              <button
-                type="button"
-                className="action-button"
-                onClick={handleExport}
-                aria-label="Export funnel JSON"
-              >
-                Export JSON
-              </button>
-            </div>
-            <div className="actions__row">
-              <button
-                type="button"
-                className="action-button"
-                onClick={undo}
-                disabled={!canUndo}
-                aria-label="Undo last change"
-              >
-                Undo
-              </button>
-              <button
-                type="button"
-                className="action-button"
-                onClick={redo}
-                disabled={!canRedo}
-                aria-label="Redo last change"
-              >
-                Redo
-              </button>
-            </div>
-            <button
-              type="button"
-              className="action-button"
-              onClick={() => {
-                reset()
-                localStorage.removeItem(STORAGE_KEY)
-              }}
-            >
-              Reset builder
-            </button>
-            <input
-              ref={importInputRef}
-              className="actions__file-input"
-              type="file"
-              accept="application/json"
-              aria-label="Select JSON file to import"
-              onChange={(event) => {
-                const file = event.target.files?.[0]
-                if (file) {
-                  handleImport(file)
-                  event.target.value = ''
-                }
-              }}
-            />
-            {storageError && <p className="actions__notice">{storageError}</p>}
-            {importError && <p className="actions__notice">{importError}</p>}
-          </div>
-        </section>
-        <section className="sidebar__section" aria-label="Validation">
-          <h2 className="sidebar__section-title">Validation</h2>
-          <div className="validation">
-            {validation.errors.length === 0 && validation.warnings.length === 0 && (
-              <p className="validation__empty">No issues detected yet.</p>
-            )}
-            {validation.errors.map((error, index) => (
-              <div className="validation__item validation__item--error" key={`error-${index}`}>
-                <span className="validation__badge">Error</span>
-                <span>{error}</span>
-              </div>
-            ))}
-            {validation.warnings.map((warning, index) => (
-              <div className="validation__item validation__item--warning" key={`warn-${index}`}>
-                <span className="validation__badge">Warning</span>
-                <span>{warning}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      </aside>
-      <main className="canvas" aria-label="Funnel canvas">
-        <div className="canvas__header">
-          <h2 className="canvas__title">Canvas</h2>
-          <p className="canvas__subtitle">
-            The drag-and-drop flow editor will live in this area.
-          </p>
-        </div>
-        <div
-          className="canvas__flow"
-          onDragOver={(event) => {
-            event.preventDefault()
-            event.dataTransfer.dropEffect = 'move'
-          }}
-          onDrop={(event) => {
-            event.preventDefault()
-            const type = event.dataTransfer.getData('application/reactflow') as NodeType
-            if (!type || !reactFlowInstance) {
-              return
-            }
-            const position = reactFlowInstance.screenToFlowPosition({
-              x: event.clientX,
-              y: event.clientY,
-            })
-            addNode(type, position)
-          }}
-        >
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            onInit={setReactFlowInstance}
-            onNodesChange={applyNodeChanges}
-            onEdgesChange={applyEdgeChanges}
-            onConnect={(connection) => {
-              if (connection.source && connection.target) {
-                const sourceNode = nodeById[connection.source]
-                if (sourceNode?.data.type === 'thankyou') {
-                  return
-                }
-                onConnect(connection.source, connection.target)
-              }
-            }}
-            onNodeDragStop={(_, node) => {
-              updateNodePosition(node.id, node.position)
-            }}
-            panOnDrag
-            defaultEdgeOptions={{
-              type: 'deletable',
-              markerEnd: {
-                type: MarkerType.ArrowClosed,
-                color: '#111827',
-              },
-              style: { strokeWidth: 2, stroke: '#111827' },
-            }}
-            fitView
-          >
-            <Background gap={20} size={1} color="#e5e7eb" />
-          </ReactFlow>
-          {!hasNodes && (
-            <div className="canvas__empty-state" role="status" aria-live="polite">
-              <p className="canvas__empty-title">No nodes yet</p>
-              <p className="canvas__empty-body">
-                Start by dragging a page type from the palette into the canvas.
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
+    <div className="page">
+      <TopNav
+        onImport={handleImport}
+        onExport={handleExport}
+        onUndo={undo}
+        onRedo={redo}
+        onReset={() => {
+          reset()
+          localStorage.removeItem(STORAGE_KEY)
+        }}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        storageError={storageError}
+        importError={importError}
+      />
+      <div className="app">
+        <Sidebar validation={{ errors, warnings }} />
+        <CanvasArea
+          nodes={nodes}
+          edges={edges}
+          nodeById={nodeById}
+          addNode={addNode}
+          applyNodeChanges={applyNodeChanges}
+          applyEdgeChanges={applyEdgeChanges}
+          onConnect={onConnect}
+          savePositionSnapshot={savePositionSnapshot}
+        />
+      </div>
     </div>
   )
 }
