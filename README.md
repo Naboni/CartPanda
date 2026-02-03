@@ -1,37 +1,85 @@
 # Cartpanda Funnel Builder
 
-Visual-only funnel builder built for the Cartpanda practical test. It supports drag-and-drop node creation, directed edges, basic validation rules, local persistence, and JSON import/export.
+A visual drag-and-drop funnel builder for creating sales funnels with connected pages.
 
-## Setup
+## Quick Start
 
 ```bash
 npm install
-npm run dev
+npm run dev      # Start dev server at localhost:5173
+npm run test:run # Run unit tests
 ```
 
-## Core Decisions
+## Features
 
-- **React + Vite + TypeScript** for fast dev feedback and typed safety.
-- **React Flow** for graph rendering, panning, and draggable nodes.
-- **Zustand** for concise state management.
-- **Zod** for runtime validation of localStorage and imported JSON.
-- **Plain CSS** for predictable styling without extra tooling.
+**Canvas**
+- Drag-and-drop nodes from palette to canvas
+- Pan to navigate infinite canvas
+- Connect nodes with directed arrows
+- Inline edit node titles (click edit icon)
+- Delete nodes and edges (click trash icon)
 
-## Tradeoffs & Next Improvements
+**Node Types**
+- Sales Page, Order Page, Upsell, Downsell, Thank You
+- Each type has distinct color coding
+- Auto-incrementing labels (Upsell 1, Upsell 2...)
+- Thank You pages cannot have outgoing connections
 
-- **Skipped** zoom, minimap, and undo/redo to keep the MVP focused. Next step would add zoom + undo with a small history buffer.
-- **Limited** node editing (title/button text). A future pass would add editable fields and inline validation.
-- **Validation** is shown as warnings/errors but does not block non-critical rules. Could add an explicit “Publish check” later.
+**History & Persistence**
+- Undo/Redo support for all actions
+- Auto-saves to localStorage
+- Export/Import JSON files
+- Reset to clear everything
 
-## Accessibility Notes
+**Validation**
+- Real-time validation panel
+- Errors: Thank You with outgoing edges
+- Warnings: Sales Page not connected to Order Page
 
-- Palette items and action buttons are keyboard focusable with visible focus rings.
-- Form controls include ARIA labels where needed.
-- Validation uses text labels and badges (not color-only).
-- Empty state and warnings are readable with adequate contrast.
+## Tech Stack
 
-## How It Works
+| Layer | Choice |
+|-------|--------|
+| Framework | React + TypeScript + Vite |
+| Canvas | React Flow |
+| State | Zustand |
+| Validation | Zod |
+| Testing | Vitest |
+| Styling | Plain CSS |
 
-- Nodes and edges live in a single Zustand store.
-- State persists to `localStorage` (debounced).
-- Import/export flows are validated with Zod and give friendly errors.
+## Project Structure
+
+```
+src/
+├── features/funnel/
+│   ├── components/    # UI components (nodes, edges, layout)
+│   ├── constants/     # Colors, palette items
+│   ├── hooks/         # Validation, persistence, import/export
+│   ├── schema/        # Zod schemas
+│   ├── state/         # Zustand store
+│   └── types.ts       # TypeScript types
+├── assets/            # Icons (trash, undo, redo, etc.)
+└── App.tsx            # Main app composition
+```
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run test` | Run tests in watch mode |
+| `npm run test:run` | Run tests once |
+| `npm run lint` | Lint code |
+| `npm run format` | Format with Prettier |
+
+## Accessibility
+
+- Keyboard navigable controls
+- Visible focus indicators
+- ARIA labels on interactive elements
+- Color + text for validation (not color-only)
+
+## Architecture Doc
+
+See `docs/dashboard-architecture.md` for the Part 2 dashboard architecture answer.
