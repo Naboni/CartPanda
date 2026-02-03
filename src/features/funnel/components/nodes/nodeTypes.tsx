@@ -6,11 +6,19 @@ import { BaseNode } from './BaseNode'
 type FunnelNodeProps = NodeProps<FunnelNodeData>
 
 export const nodeTypes = {
-  sales: ({ data }: FunnelNodeProps) => <BaseNode data={data} accentColor="#2563eb" />,
-  order: ({ data }: FunnelNodeProps) => <BaseNode data={data} accentColor="#16a34a" />,
-  upsell: ({ data }: FunnelNodeProps) => <BaseNode data={data} accentColor="#f97316" />,
-  downsell: ({ data }: FunnelNodeProps) => <BaseNode data={data} accentColor="#db2777" />,
-  thankyou: ({ data }: FunnelNodeProps) => (
-    <BaseNode data={data} accentColor="#64748b" showSource={false} />
+  sales: ({ data, id, selected }: FunnelNodeProps) => (
+    <BaseNode id={id} data={data} accentColor="#2563eb" selected={selected} />
+  ),
+  order: ({ data, id, selected }: FunnelNodeProps) => (
+    <BaseNode id={id} data={data} accentColor="#16a34a" selected={selected} />
+  ),
+  upsell: ({ data, id, selected }: FunnelNodeProps) => (
+    <BaseNode id={id} data={data} accentColor="#f97316" selected={selected} />
+  ),
+  downsell: ({ data, id, selected }: FunnelNodeProps) => (
+    <BaseNode id={id} data={data} accentColor="#db2777" selected={selected} />
+  ),
+  thankyou: ({ data, id, selected }: FunnelNodeProps) => (
+    <BaseNode id={id} data={data} accentColor="#64748b" showSource={false} selected={selected} />
   ),
 }

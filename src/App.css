@@ -220,6 +220,58 @@
   font-size: 14px;
 }
 
+.node-delete-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+}
+
+.node-delete-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.edge-delete-button {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 999px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+}
+
+.edge-delete-button:hover,
+.node-delete-button:hover {
+  border-color: #fecaca;
+  background: #fee2e2;
+}
+
+.edge-delete-button:active,
+.node-delete-button:active {
+  border-color: #fca5a5;
+  background: #fecaca;
+}
+
+.delete-icon-image {
+  width: 11px;
+  height: 11px;
+  display: block;
+}
+
 .canvas__empty-state {
   position: absolute;
   inset: 24px;

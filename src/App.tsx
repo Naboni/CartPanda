@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ReactFlow, { Background, MarkerType, type ReactFlowInstance } from 'reactflow'
 
+import { edgeTypes } from './features/funnel/components/edges/edgeTypes'
 import { nodeTypes } from './features/funnel/components/nodes/nodeTypes'
 import { funnelStateSchema } from './features/funnel/schema/funnelSchema'
 import { useFunnelStore } from './features/funnel/state/store'
@@ -27,6 +28,8 @@ function App() {
   const nodes = useFunnelStore((state) => state.nodes)
   const edges = useFunnelStore((state) => state.edges)
   const addNode = useFunnelStore((state) => state.addNode)
+  const applyNodeChanges = useFunnelStore((state) => state.applyNodeChanges)
+  const applyEdgeChanges = useFunnelStore((state) => state.applyEdgeChanges)
   const updateNodePosition = useFunnelStore((state) => state.updateNodePosition)
   const onConnect = useFunnelStore((state) => state.onConnect)
   const setState = useFunnelStore((state) => state.setState)
@@ -288,7 +291,10 @@ function App() {
             nodes={nodes}
             edges={edges}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             onInit={setReactFlowInstance}
+            onNodesChange={applyNodeChanges}
+            onEdgesChange={applyEdgeChanges}
             onConnect={(connection) => {
               if (connection.source && connection.target) {
                 const sourceNode = nodeById[connection.source]
@@ -303,6 +309,7 @@ function App() {
             }}
             panOnDrag
             defaultEdgeOptions={{
+              type: 'deletable',
               markerEnd: {
                 type: MarkerType.ArrowClosed,
                 color: '#111827',
