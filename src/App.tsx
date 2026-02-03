@@ -19,8 +19,10 @@ const paletteItems: Array<{ type: NodeType; label: string }> = [
 function App() {
   const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null)
   const [storageError, setStorageError] = useState<string | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
   const hasLoadedRef = useRef(false)
   const saveTimeoutRef = useRef<number | null>(null)
+  const importInputRef = useRef<HTMLInputElement | null>(null)
 
   const nodes = useFunnelStore((state) => state.nodes)
   const edges = useFunnelStore((state) => state.edges)
@@ -112,6 +114,45 @@ function App() {
     }
   }, [edges, nodes])
 
+  const handleExport = () => {
+    const payload: Pick<ReturnType<typeof useFunnelStore.getState>, 'nodes' | 'edges'> = {
+      nodes,
+      edges,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'cartpanda-funnel.json'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const content = typeof reader.result === 'string' ? reader.result : ''
+        const parsed = JSON.parse(content)
+        const result = funnelStateSchema.safeParse(parsed)
+        if (!result.success) {
+          setImportError('Invalid funnel JSON. Please check the file and try again.')
+          return
+        }
+        setState(result.data)
+        setImportError(null)
+      } catch {
+        setImportError('Unable to read JSON file. Please verify the file and try again.')
+      }
+    }
+    reader.onerror = () => {
+      setImportError('Unable to read the selected file.')
+    }
+    reader.readAsText(file)
+  }
+
   return (
     <div className="app">
       <aside className="sidebar" aria-label="Funnel controls">
@@ -150,6 +191,24 @@ function App() {
             Save, import, and export actions live here.
           </p>
           <div className="actions">
+            <div className="actions__row">
+              <button
+                type="button"
+                className="action-button"
+                onClick={() => importInputRef.current?.click()}
+                aria-label="Import funnel JSON"
+              >
+                Import JSON
+              </button>
+              <button
+                type="button"
+                className="action-button"
+                onClick={handleExport}
+                aria-label="Export funnel JSON"
+              >
+                Export JSON
+              </button>
+            </div>
             <button
               type="button"
               className="action-button"
@@ -160,7 +219,22 @@ function App() {
             >
               Reset builder
             </button>
+            <input
+              ref={importInputRef}
+              className="actions__file-input"
+              type="file"
+              accept="application/json"
+              aria-label="Select JSON file to import"
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                if (file) {
+                  handleImport(file)
+                  event.target.value = ''
+                }
+              }}
+            />
             {storageError && <p className="actions__notice">{storageError}</p>}
+            {importError && <p className="actions__notice">{importError}</p>}
           </div>
         </section>
         <section className="sidebar__section" aria-label="Validation">

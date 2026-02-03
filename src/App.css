@@ -154,6 +154,12 @@
   gap: 10px;
 }
 
+.actions__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .action-button {
   border: 1px solid #e5e7eb;
   background: #ffffff;
@@ -175,6 +181,10 @@
   margin: 0;
   font-size: 12px;
   color: #b91c1c;
+}
+
+.actions__file-input {
+  display: none;
 }
 
 .canvas {
