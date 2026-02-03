@@ -177,6 +177,11 @@
   outline-offset: 2px;
 }
 
+.action-button:hover {
+  border-color: #cbd5f5;
+  background: #f8fafc;
+}
+
 .actions__notice {
   margin: 0;
   font-size: 12px;
@@ -316,4 +321,24 @@
   color: #111827;
   font-size: 12px;
   font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .canvas {
+    padding: 16px;
+  }
+
+  .canvas__flow {
+    min-height: 320px;
+  }
 }
