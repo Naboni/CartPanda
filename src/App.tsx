@@ -34,6 +34,10 @@ function App() {
   const onConnect = useFunnelStore((state) => state.onConnect)
   const setState = useFunnelStore((state) => state.setState)
   const reset = useFunnelStore((state) => state.reset)
+  const undo = useFunnelStore((state) => state.undo)
+  const redo = useFunnelStore((state) => state.redo)
+  const canUndo = useFunnelStore((state) => state.canUndo)
+  const canRedo = useFunnelStore((state) => state.canRedo)
 
   const hasNodes = useMemo(() => nodes.length > 0, [nodes.length])
   const nodeById = useMemo(() => {
@@ -210,6 +214,26 @@ function App() {
                 aria-label="Export funnel JSON"
               >
                 Export JSON
+              </button>
+            </div>
+            <div className="actions__row">
+              <button
+                type="button"
+                className="action-button"
+                onClick={undo}
+                disabled={!canUndo}
+                aria-label="Undo last change"
+              >
+                Undo
+              </button>
+              <button
+                type="button"
+                className="action-button"
+                onClick={redo}
+                disabled={!canRedo}
+                aria-label="Redo last change"
+              >
+                Redo
               </button>
             </div>
             <button

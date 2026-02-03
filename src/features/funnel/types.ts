@@ -15,6 +15,8 @@ export type FunnelEdge = Edge
 export type FunnelState = {
   nodes: FunnelNode[]
   edges: FunnelEdge[]
+  canUndo: boolean
+  canRedo: boolean
   applyNodeChanges: (changes: NodeChange[]) => void
   applyEdgeChanges: (changes: EdgeChange[]) => void
   removeNode: (id: string) => void
@@ -22,6 +24,8 @@ export type FunnelState = {
   addNode: (type: NodeType, position: XYPosition) => void
   updateNodePosition: (id: string, position: XYPosition) => void
   onConnect: (source: string, target: string) => void
+  undo: () => void
+  redo: () => void
   setState: (importedState: Pick<FunnelState, 'nodes' | 'edges'>) => void
   reset: () => void
 }
