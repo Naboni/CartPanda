@@ -125,3 +125,66 @@
 .canvas__flow .react-flow__renderer {
   background: #ffffff;
 }
+
+.funnel-node {
+  width: 220px;
+  border-radius: 16px;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.funnel-node__handle {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #ffffff;
+  background: #111827;
+}
+
+.funnel-node__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.funnel-node__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.funnel-node__label {
+  margin: 0;
+  font-weight: 700;
+  color: #111827;
+  font-size: 14px;
+}
+
+.funnel-node__type {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.funnel-node__footer {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.funnel-node__button {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #111827;
+  font-size: 12px;
+  font-weight: 600;
+}

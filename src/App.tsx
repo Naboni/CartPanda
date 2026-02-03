@@ -1,5 +1,6 @@
 import ReactFlow, { Background } from 'reactflow'
 
+import { nodeTypes } from './features/funnel/components/nodes/nodeTypes'
 import { useFunnelStore } from './features/funnel/state/store'
 import './App.css'
 
@@ -40,6 +41,7 @@ function App() {
           <ReactFlow
             nodes={nodes}
             edges={edges}
+            nodeTypes={nodeTypes}
             onConnect={(connection) => {
               if (connection.source && connection.target) {
                 onConnect(connection.source, connection.target)
