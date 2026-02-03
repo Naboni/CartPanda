@@ -21,12 +21,23 @@ const buttonLabels: Record<NodeType, string> = {
   thankyou: 'Done',
 }
 
-const createNode = (type: NodeType, position: { x: number; y: number }): FunnelNode => {
+const createNode = (
+  type: NodeType,
+  position: { x: number; y: number },
+  index?: number,
+): FunnelNode => {
   const id = `node_${idCounter++}`
+  const title =
+    type === 'upsell'
+      ? `${typeTitles[type]} ${index ?? 1}`
+      : type === 'downsell'
+        ? `${typeTitles[type]} ${index ?? 1}`
+        : typeTitles[type]
   const data: FunnelNodeData = {
     type,
-    title: typeTitles[type],
+    title,
     buttonLabel: buttonLabels[type],
+    index,
   }
 
   return {
@@ -45,9 +56,15 @@ const initialState: Pick<FunnelState, 'nodes' | 'edges'> = {
 export const useFunnelStore = create<FunnelState>((set) => ({
   ...initialState,
   addNode: (type, position) =>
-    set((state) => ({
-      nodes: [...state.nodes, createNode(type, position)],
-    })),
+    set((state) => {
+      const nextIndex =
+        type === 'upsell' || type === 'downsell'
+          ? state.nodes.filter((node) => node.data.type === type).length + 1
+          : undefined
+      return {
+        nodes: [...state.nodes, createNode(type, position, nextIndex)],
+      }
+    }),
   updateNodePosition: (id, position) =>
     set((state) => ({
       nodes: state.nodes.map((node) =>
