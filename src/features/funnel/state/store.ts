@@ -198,6 +198,25 @@ export const useFunnelStore = create<StoreState>((set, get) => ({
     })
   },
 
+  updateNodeTitle: (id, title) => {
+    const state = get()
+    const snapshot = takeSnapshot(state)
+    const nextNodes = state.nodes.map((node) =>
+      node.id === id
+        ? { ...node, data: { ...node.data, title } }
+        : node,
+    )
+    const newPast = [...state.past, snapshot].slice(-MAX_HISTORY)
+
+    set({
+      nodes: nextNodes,
+      past: newPast,
+      future: [],
+      canUndo: newPast.length > 0,
+      canRedo: false,
+    })
+  },
+
   onConnect: (source, target) => {
     const state = get()
     const snapshot = takeSnapshot(state)

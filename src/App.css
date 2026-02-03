@@ -313,10 +313,15 @@
   border: 0;
 }
 
-.node-delete-button {
+.node-actions {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -12px;
+  right: -12px;
+  display: flex;
+  gap: 4px;
+}
+
+.node-action-button {
   border: 1px solid #e5e7eb;
   background: #ffffff;
   border-radius: 999px;
@@ -327,11 +332,24 @@
   padding: 0;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+  color: #6b7280;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
-.node-delete-button:focus-visible {
+.node-action-button:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
+}
+
+.node-action-button--edit:hover {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.node-action-button--delete:hover {
+  border-color: #fecaca;
+  background: #fee2e2;
 }
 
 .edge-delete-button {
@@ -347,14 +365,13 @@
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
 }
 
-.edge-delete-button:hover,
-.node-delete-button:hover {
+.edge-delete-button:hover {
   border-color: #fecaca;
   background: #fee2e2;
 }
 
 .edge-delete-button:active,
-.node-delete-button:active {
+.node-action-button:active {
   border-color: #fca5a5;
   background: #fecaca;
 }
@@ -439,11 +456,36 @@
   flex-shrink: 0;
 }
 
+.funnel-node__info {
+  flex: 1;
+  min-width: 0;
+}
+
 .funnel-node__label {
   margin: 0;
   font-weight: 700;
   color: #111827;
   font-size: 14px;
+  word-break: break-word;
+}
+
+.funnel-node__input {
+  width: 100%;
+  margin: 0;
+  padding: 2px 6px;
+  border: 1px solid #2563eb;
+  border-radius: 4px;
+  background: #ffffff;
+  font-weight: 700;
+  color: #111827;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.funnel-node__input:focus {
+  border-color: #2563eb;
 }
 
 .funnel-node__type {

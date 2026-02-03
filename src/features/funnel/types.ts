@@ -23,6 +23,7 @@ export type FunnelState = {
   removeEdge: (id: string) => void
   addNode: (type: NodeType, position: XYPosition) => void
   updateNodePosition: (id: string, position: XYPosition) => void
+  updateNodeTitle: (id: string, title: string) => void
   onConnect: (source: string, target: string) => void
   undo: () => void
   redo: () => void
